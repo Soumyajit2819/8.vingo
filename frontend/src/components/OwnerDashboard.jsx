@@ -1,5 +1,6 @@
 import React from 'react'
-import Nav from './Nav.jsx';
+import Nav from './Nav.jsx'
+
 
 import { useSelector } from 'react-redux'
 import { FaUtensils } from "react-icons/fa";
