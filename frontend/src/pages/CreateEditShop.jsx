@@ -55,7 +55,7 @@ function CreateEditShop() {
             }
 
             console.log("5. 🚀 About to send API request to backend...");
-            const result = await axios.post(`${serverUrl}/api/shop/create-edit`, dataToSubmit, {
+            const result = await axios.post(`${serverUrl}/shop/create-edit`, dataToSubmit, {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'multipart/form-data'
