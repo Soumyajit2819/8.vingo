@@ -22,9 +22,13 @@ export const createEditShop=async (req,res) => {
       
        await shop.populate("owner items")
        return res.status(201).json(shop)
-    } catch (error) {
-        return res.status(500).json({message:`create shop error ${error}`})
+    } // AFTER
+    catch (error) {
+        console.error("!!!!!!!!!! CREATE SHOP FAILED !!!!!!!!!!");
+        console.error("ERROR:", error);
+        return res.status(500).json({ message: "Server error during shop creation.", error: error.message });
     }
+    
 }
 
 export const getMyShop=async (req,res) => {
