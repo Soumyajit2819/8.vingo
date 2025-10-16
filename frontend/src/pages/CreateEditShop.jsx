@@ -29,7 +29,7 @@ function CreateEditShop() {
         setFrontendImage(URL.createObjectURL(file))
     }
 
-    // THIS IS THE NEW, CORRECTED SUBMIT FUNCTION
+    // FIXED: Changed /shop/create-edit to /api/shop/create-edit
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -55,7 +55,8 @@ function CreateEditShop() {
             }
 
             console.log("5. 🚀 About to send API request to backend...");
-            const result = await axios.post(`${serverUrl}/shop/create-edit`, dataToSubmit, {
+            // FIXED: Added /api prefix to match your backend route mounting
+            const result = await axios.post(`${serverUrl}/api/shop/create-edit`, dataToSubmit, {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'multipart/form-data'
