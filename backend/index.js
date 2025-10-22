@@ -20,7 +20,7 @@ import { socketHandler } from "./socket.js";
 // -------------------
 // FRONTEND URL
 // -------------------
-const frontendURL = "https://eight-vingo-2.onrender.com";
+const frontendURL = process.env.FRONTEND_URL || "https://eight-vingo-2.onrender.com";
 
 // -------------------
 // EXPRESS APP
@@ -35,7 +35,7 @@ const io = new Server(server, {
   cors: {
     origin: frontendURL,   // Allow frontend domain
     credentials: true,
-    methods: ["POST", "GET"]
+    methods: ["GET", "POST"]
   }
 });
 
@@ -44,8 +44,14 @@ app.set("io", io);
 // -------------------
 // MIDDLEWARES
 // -------------------
+// Log incoming requests
+app.use((req, res, next) => {
+  console.log(`[Request] ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(cors({
-  origin: frontendURL,   // Allow frontend domain
+  origin: frontendURL,
   credentials: true
 }));
 app.use(express.json());
@@ -72,5 +78,5 @@ const port = process.env.PORT || 5000;
 server.listen(port, () => {
   connectDb();
   console.log(`Server started at port ${port}`);
+  console.log(`Frontend allowed origin: ${frontendURL}`);
 });
-
