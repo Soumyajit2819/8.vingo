@@ -20,7 +20,7 @@ import { socketHandler } from "./socket.js";
 // -------------------
 // FRONTEND URL
 // -------------------
-const frontendURL = process.env.FRONTEND_URL || "https://8-vingo.vercel.app";
+const frontendURL = "https://eight-vingo-2.onrender.com";
 
 // -------------------
 // EXPRESS APP
@@ -73,3 +73,4 @@ server.listen(port, () => {
   connectDb();
   console.log(`Server started at port ${port}`);
 });
+
