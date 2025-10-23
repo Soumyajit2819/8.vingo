@@ -27,7 +27,7 @@ import useUpdateLocation from './hooks/useUpdateLocation';
 import { setSocket } from './redux/userSlice';
 
 // ✅ Correct backend URL (your Render backend)
-export const serverUrl = "https://eight-vingo-1.onrender.com";
+export const serverUrl = "https://eight-vingo-2.onrender.com";
 
 function App() {
   const { userData } = useSelector((state) => state.user);
