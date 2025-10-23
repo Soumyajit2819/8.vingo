@@ -29,14 +29,18 @@ const app = express();
 const server = http.createServer(app);
 
 // -------------------
-// SOCKET.IO SETUP
+// SOCKET.IO SETUP (FIXED)
 // -------------------
 const io = new Server(server, {
   cors: {
-    origin: frontendURL,   // Allow frontend domain
+    origin: [frontendURL, "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST"]
-  }
+  },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 app.set("io", io);
@@ -44,16 +48,16 @@ app.set("io", io);
 // -------------------
 // MIDDLEWARES
 // -------------------
-// Log incoming requests
 app.use((req, res, next) => {
   console.log(`[Request] ${req.method} ${req.url}`);
   next();
 });
 
 app.use(cors({
-  origin: frontendURL,
+  origin: [frontendURL, "http://localhost:5173"],
   credentials: true
 }));
+
 app.use(express.json());
 app.use(cookieParser());
 
