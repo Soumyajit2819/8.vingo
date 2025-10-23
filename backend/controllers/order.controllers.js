@@ -482,19 +482,13 @@ export const sendDeliveryOtp = async (req, res) => {
     await order.save()
 
     // Send email in background (don't wait for it)
-    sendDeliveryOtpMail(order.user, otp).catch(err => {
-      console.error('Email send error:', err)
-    })
+    await sendDeliveryOtpMail(order.user, otp)
+    return res.status(200).json({message:`otp sent sucessfully to ${order?.user?.fullName}`}) 
+  }
+      
+    
 
-    // Respond immediately without waiting for email
-    return res.status(200).json({ 
-      success: true,
-      message: `OTP sent Successfully to ${order?.user?.fullName}`,
-      // Remove in production - only for testing
-      otp: otp 
-    })
-
-  } catch (error) {
+  catch (error) {
     console.error('Delivery OTP error:', error)
     return res.status(500).json({ message: `delivery otp error ${error}` })
   }
