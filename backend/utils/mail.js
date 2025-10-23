@@ -1,25 +1,17 @@
-import nodemailer from "nodemailer";
+import { Resend } from 'resend';
 import dotenv from "dotenv";
 dotenv.config();
 
-// Create transporter for Gmail with secure connection
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // Use SSL
-  auth: {
-    user: process.env.EMAIL, // vingofood580@gmail.com
-    pass: process.env.PASS, // Gmail App Password (16 characters)
-  },
-});
+// Initialize Resend with API key
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Send OTP for password reset
 export const sendOtpMail = async (to, otp) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL,
-      to,
-      subject: "Reset Your Password - Vingo",
+    const { data, error } = await resend.emails.send({
+      from: 'Vingo <onboarding@resend.dev>',
+      to: [to],
+      subject: 'Reset Your Password - Vingo',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #FF6B6B;">Password Reset Request</h2>
@@ -33,20 +25,27 @@ export const sendOtpMail = async (to, otp) => {
         </div>
       `,
     });
+
+    if (error) {
+      console.error(`❌ Error sending OTP mail to ${to}:`, error);
+      throw error;
+    }
+
     console.log(`✅ OTP mail sent successfully to ${to}`);
+    return data;
   } catch (error) {
     console.error(`❌ Error sending OTP mail to ${to}:`, error);
-    throw error; // Re-throw to handle in route
+    throw error;
   }
 };
 
 // Send delivery OTP
 export const sendDeliveryOtpMail = async (user, otp) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL,
-      to: user.email,
-      subject: "Your Delivery OTP - Vingo",
+    const { data, error } = await resend.emails.send({
+      from: 'Vingo <onboarding@resend.dev>',
+      to: [user.email],
+      subject: 'Your Delivery OTP - Vingo',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #4CAF50;">Delivery Verification</h2>
@@ -60,9 +59,16 @@ export const sendDeliveryOtpMail = async (user, otp) => {
         </div>
       `,
     });
+
+    if (error) {
+      console.error(`❌ Error sending delivery OTP mail to ${user.email}:`, error);
+      throw error;
+    }
+
     console.log(`✅ Delivery OTP mail sent successfully to ${user.email}`);
+    return data;
   } catch (error) {
     console.error(`❌ Error sending delivery OTP mail to ${user.email}:`, error);
-    throw error; // Re-throw to handle in route
+    throw error;
   }
 };
