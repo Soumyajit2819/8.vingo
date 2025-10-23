@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 
+// 🔹 Pages
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import ForgotPassword from './pages/ForgotPassword';
@@ -17,6 +18,7 @@ import MyOrders from './pages/MyOrders';
 import TrackOrderPage from './pages/TrackOrderPage';
 import Shop from './pages/Shop';
 
+// 🔹 Hooks
 import useGetCurrentUser from './hooks/useGetCurrentUser';
 import useGetCity from './hooks/useGetCity';
 import useGetMyShop from './hooks/useGetMyShop';
@@ -24,16 +26,18 @@ import useGetShopByCity from './hooks/useGetShopByCity';
 import useGetItemsByCity from './hooks/useGetItemsByCity';
 import useGetMyOrders from './hooks/useGetMyOrders';
 import useUpdateLocation from './hooks/useUpdateLocation';
+
+// 🔹 Redux
 import { setSocket } from './redux/userSlice';
 
-// ✅ Correct backend URL (your Render backend)
-export const serverUrl = "https://eight-vingo-2.onrender.com";
+// ✅ Backend URL
+export const serverUrl = import.meta.env.VITE_API_URL || "https://vingo-9xou.onrender.com";
 
 function App() {
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
-  // custom hooks
+  // ✅ Initialize hooks
   useGetCurrentUser();
   useUpdateLocation();
   useGetCity();
@@ -42,11 +46,11 @@ function App() {
   useGetItemsByCity();
   useGetMyOrders();
 
-  // ✅ Socket connection setup
+  // ✅ Setup socket connection
   useEffect(() => {
     const socketInstance = io(serverUrl, {
       withCredentials: true,
-      transports: ['websocket'], // ensures stable connection
+      transports: ['websocket'],
     });
 
     dispatch(setSocket(socketInstance));
@@ -67,6 +71,7 @@ function App() {
     };
   }, [userData?._id]);
 
+  // ✅ App routes
   return (
     <Routes>
       <Route path="/signup" element={!userData ? <SignUp /> : <Navigate to="/" />} />
