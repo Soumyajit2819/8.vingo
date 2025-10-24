@@ -1,74 +1,46 @@
-import { Resend } from 'resend';
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create transporter for Gmail
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL,   // your Gmail
+    pass: process.env.PASS,    // Gmail app password, NOT regular password
+  },
+});
 
 // Send OTP for password reset
 export const sendOtpMail = async (to, otp) => {
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'Vingo <onboarding@resend.dev>',
-      to: [to],
-      subject: 'Reset Your Password - Vingo',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #FF6B6B;">Password Reset Request</h2>
-          <p>Hello,</p>
-          <p>Your OTP for password reset is:</p>
-          <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #333;">
-            ${otp}
-          </div>
-          <p style="color: #666; font-size: 14px;">This OTP will expire in 5 minutes.</p>
-          <p style="color: #999; font-size: 12px;">If you didn't request this, please ignore this email.</p>
-        </div>
-      `,
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to,
+      subject: "Reset Your Password",
+      html: `<p>Hello,</p>
+             <p>Your OTP for password reset is <b>${otp}</b>.</p>
+             <p>It will expire in 5 minutes.</p>`,
     });
-
-    if (error) {
-      console.error(`❌ Error sending OTP mail to ${to}:`, error);
-      throw error;
-    }
-
-    console.log(`✅ OTP mail sent successfully to ${to}`);
-    return data;
+    console.log(`OTP mail sent successfully to ${to} ✅`);
   } catch (error) {
-    console.error(`❌ Error sending OTP mail to ${to}:`, error);
-    throw error;
+    console.error(`Error sending OTP mail to ${to}:`, error);
   }
 };
 
 // Send delivery OTP
 export const sendDeliveryOtpMail = async (user, otp) => {
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'Vingo <onboarding@resend.dev>',
-      to: [user.email],
-      subject: 'Your Delivery OTP - Vingo',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #4CAF50;">Delivery Verification</h2>
-          <p>Hello ${user.fullName},</p>
-          <p>Your delivery verification OTP is:</p>
-          <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #333;">
-            ${otp}
-          </div>
-          <p style="color: #666; font-size: 14px;">This OTP will expire in 5 minutes.</p>
-          <p style="color: #999; font-size: 12px;">Please share this OTP with your delivery person.</p>
-        </div>
-      `,
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: user.email,
+      subject: "Delivery OTP",
+      html: `<p>Hello ${user.fullName},</p>
+             <p>Your OTP for delivery is <b>${otp}</b>.</p>
+             <p>It will expire in 5 minutes.</p>`,
     });
-
-    if (error) {
-      console.error(`❌ Error sending delivery OTP mail to ${user.email}:`, error);
-      throw error;
-    }
-
-    console.log(`✅ Delivery OTP mail sent successfully to ${user.email}`);
-    return data;
+    console.log(`Delivery OTP mail sent successfully to ${user.email} ✅`);
   } catch (error) {
-    console.error(`❌ Error sending delivery OTP mail to ${user.email}:`, error);
-    throw error;
+    console.error(`Error sending delivery OTP mail to ${user.email}:`, error);
   }
 };
