@@ -1,38 +1,46 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
 
+// Create transporter for Gmail
 const transporter = nodemailer.createTransport({
-  host: "smtp.sendgrid.net",
-  port: 587,
+  service: "gmail",
   auth: {
-    user: "apikey", // literal string
-    pass: process.env.SENDGRID_API_KEY,
+    user: process.env.EMAIL,   // your Gmail
+    pass: process.env.PASS,    // Gmail app password, NOT regular password
   },
 });
 
+// Send OTP for password reset
 export const sendOtpMail = async (to, otp) => {
   try {
     await transporter.sendMail({
-      from: "your-email@example.com", // verified sender in SendGrid
+      from: process.env.EMAIL,
       to,
       subject: "Reset Your Password",
-      html: `<p>Hello,</p><p>Your OTP is <b>${otp}</b></p>`,
+      html: `<p>Hello,</p>
+             <p>Your OTP for password reset is <b>${otp}</b>.</p>
+             <p>It will expire in 5 minutes.</p>`,
     });
-    console.log(`OTP sent to ${to} ✅`);
+    console.log(`OTP mail sent successfully to ${to} ✅`);
   } catch (error) {
-    console.error(`Error sending OTP:`, error);
+    console.error(`Error sending OTP mail to ${to}:`, error);
   }
 };
 
+// Send delivery OTP
 export const sendDeliveryOtpMail = async (user, otp) => {
   try {
     await transporter.sendMail({
-      from: "your-email@example.com", // same verified sender
+      from: process.env.EMAIL,
       to: user.email,
       subject: "Delivery OTP",
-      html: `<p>Hello ${user.fullName},</p><p>Your OTP is <b>${otp}</b></p>`,
+      html: `<p>Hello ${user.fullName},</p>
+             <p>Your OTP for delivery is <b>${otp}</b>.</p>
+             <p>It will expire in 5 minutes.</p>`,
     });
-    console.log(`Delivery OTP sent to ${user.email} ✅`);
+    console.log(`Delivery OTP mail sent successfully to ${user.email} ✅`);
   } catch (error) {
-    console.error(`Error sending delivery OTP:`, error);
+    console.error(`Error sending delivery OTP mail to ${user.email}:`, error);
   }
 };
