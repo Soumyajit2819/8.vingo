@@ -5,7 +5,7 @@ import User from "../models/user.model.js"
 import { sendDeliveryOtpMail } from "../utils/mail.js"
 import RazorPay from "razorpay"
 import dotenv from "dotenv"
-import { count } from "console"
+/*import { count } from "console"*/
 
 dotenv.config()
 
@@ -482,7 +482,7 @@ export const sendDeliveryOtp = async (req, res) => {
     await order.save()
 
     // Send email in background (don't wait for it)
-    sendDeliveryOtpMail(order.user, otp).catch(err => console.error("OTP send failed:", err));
+    sendDeliveryOtpMail(order.user, otp).catch(err =>{console.error("OTP send failed:", err)});
 
     return res.status(200).json({message:`otp sent sucessfully to ${order?.user?.fullName}`}) 
   }
