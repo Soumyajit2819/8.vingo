@@ -482,7 +482,7 @@ export const sendDeliveryOtp = async (req, res) => {
     await order.save()
 
     // Send email in background (don't wait for it)
-    sendDeliveryOtpMail({ email: order.user.email, fullName: order.user.fullName }, otp)
+    sendDeliveryOtpMail( otp)
     .catch(err => console.error("OTP send failed:", err));
     return res.status(200).json({message:`otp sent sucessfully to ${order?.user?.fullName}`}) 
   }
