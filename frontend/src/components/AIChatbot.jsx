@@ -47,6 +47,9 @@ const AIChatbot = () => {
 
   const generateResponse = async (query) => {
     try {
+      console.log('🔍 Sending query:', query);
+      console.log('📍 Location:', userLocation);
+      
       const response = await axios.post(
         '/api/ai/chat',
         { 
@@ -55,7 +58,9 @@ const AIChatbot = () => {
         },
         { withCredentials: true }
       );
-
+  
+      console.log('✅ Response received:', response.data);
+  
       if (response.data.success) {
         return {
           text: response.data.text,
@@ -63,18 +68,23 @@ const AIChatbot = () => {
         };
       } else {
         return {
-          text: response.data.message,
+          text: response.data.message || "No results found",
           results: []
         };
       }
     } catch (error) {
-      console.error('AI Error:', error);
+      console.error('❌ AI Error:', error);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
+      console.error('❌ Full error:', error.message);
+      
       return {
-        text: "Sorry, I'm having trouble connecting. Please try again.",
+        text: `Error: ${error.response?.data?.message || error.message || "Connection failed"}`,
         results: []
       };
     }
   };
+    
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
