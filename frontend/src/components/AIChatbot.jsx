@@ -51,7 +51,7 @@ const AIChatbot = () => {
       console.log('📍 Location:', userLocation);
       
       const response = await axios.post(
-        '/api/ai/chat',
+        'https://vingo-9xou.onrender.com/api/ai/chat',
         { 
           query,
           location: userLocation 
