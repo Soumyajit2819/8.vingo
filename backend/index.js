@@ -13,6 +13,7 @@ import userRouter from "./routes/user.routes.js";
 import shopRouter from "./routes/shop.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import orderRouter from "./routes/order.routes.js";
+import aiRouter from "./routes/aiRoutes.js"; // ✅ FIXED - matches your filename
 
 // Socket
 import { socketHandler } from "./socket.js";
@@ -33,7 +34,7 @@ const server = http.createServer(app);
 // -------------------
 const io = new Server(server, {
   cors: {
-    origin: frontendURL,   // Allow frontend domain
+    origin: frontendURL,
     credentials: true,
     methods: ["GET", "POST"]
   }
@@ -44,7 +45,6 @@ app.set("io", io);
 // -------------------
 // MIDDLEWARES
 // -------------------
-// Log incoming requests
 app.use((req, res, next) => {
   console.log(`[Request] ${req.method} ${req.url}`);
   next();
@@ -54,6 +54,7 @@ app.use(cors({
   origin: frontendURL,
   credentials: true
 }));
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -65,6 +66,7 @@ app.use("/api/user", userRouter);
 app.use("/api/shop", shopRouter);
 app.use("/api/item", itemRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/ai", aiRouter); // ✅ AI Routes
 
 // -------------------
 // SOCKET HANDLER
@@ -79,4 +81,5 @@ server.listen(port, () => {
   connectDb();
   console.log(`Server started at port ${port}`);
   console.log(`Frontend allowed origin: ${frontendURL}`);
+  console.log(`✅ AI Routes registered at /api/ai`);
 });
