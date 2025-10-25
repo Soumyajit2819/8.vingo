@@ -8,7 +8,7 @@ import { ClipLoader } from 'react-spinners';
 import { setMyShopData } from '../redux/ownerSlice';
 
 // ✅ Make sure this points to your Render backend
-const serverUrl = import.meta.env.VITE_API_URL || "https://eight-vingo-2.onrender.com";
+const serverUrl = import.meta.env.VITE_API_URL || "https://vingo-9xou.onrender.com";
 
 function CreateEditShop() {
     const navigate = useNavigate();
@@ -130,4 +130,5 @@ function CreateEditShop() {
 }
 
 export default CreateEditShop;
+
 
