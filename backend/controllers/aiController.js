@@ -112,39 +112,82 @@ class AIHelper {
       }))
       .sort((a, b) => b.avgScore - a.avgScore)
       .slice(0, 5);
+// ✅ If no matches, return ALL shops with their items
+if (results.length === 0) {
+  const allShops = {};
+  items.forEach(item => {
+    const shopId = item.shop._id.toString();
+    if (!allShops[shopId]) {
+      allShops[shopId] = {
+        shop: item.shop,
+        items: [],
+        avgScore: 0
+      };
+    }
+    allShops[shopId].items.push(item);
+  });
 
-    const text = results.length === 0 
-      ? `I couldn't find any items matching "${query}". Try searching for popular dishes!`
-      : `Great choice! I found ${results.length} shop(s) serving what you're looking for.`;
+  const allResults = Object.values(allShops).slice(0, 3);
 
-    return {
-      success: true,
-      query,
-      keywords,
-      text,
-      resultsCount: results.length,
-      results: results.map(r => ({
-        shop: {
-          _id: r.shop._id,
-          name: r.shop.name, // ✅ Changed from shopName to name
-          address: r.shop.address,
-          rating: r.shop.rating,
-          location: r.shop.location
-        },
-        items: r.items.slice(0, 5).map(item => ({
-          _id: item._id,
-          name: item.name, // ✅ Changed from itemName to name
-          price: item.price,
-          category: item.category,
-          image: item.image,
-          rating: item.rating,
-          foodType: item.foodType,
-          relevanceScore: item.relevanceScore
-        })),
-        matchScore: r.avgScore.toFixed(2)
-      }))
-    };
-  }
+  return {
+    success: true,
+    query,
+    keywords,
+    text: `I couldn't find exact matches for "${query}", but here are some shops you might like:`,
+    resultsCount: allResults.length,
+    results: allResults.map(r => ({
+      shop: {
+        _id: r.shop._id,
+        name: r.shop.name,
+        address: r.shop.address,
+        rating: r.shop.rating,
+        location: r.shop.location
+      },
+      items: r.items.slice(0, 5).map(item => ({
+        _id: item._id,
+        name: item.name,
+        price: item.price,
+        category: item.category,
+        image: item.image,
+        rating: item.rating,
+        foodType: item.foodType
+      })),
+      matchScore: "0"
+    }))
+  };
+}
+
+const text = `Great choice! I found ${results.length} shop(s) serving what you're looking for.`;
+
+return {
+  success: true,
+  query,
+  keywords,
+  text,
+  resultsCount: results.length,
+  results: results.map(r => ({
+    shop: {
+      _id: r.shop._id,
+      name: r.shop.name,
+      address: r.shop.address,
+      rating: r.shop.rating,
+      location: r.shop.location
+    },
+    items: r.items.slice(0, 5).map(item => ({
+      _id: item._id,
+      name: item.name,
+      price: item.price,
+      category: item.category,
+      image: item.image,
+      rating: item.rating,
+      foodType: item.foodType,
+      relevanceScore: item.relevanceScore
+    })),
+    matchScore: r.avgScore.toFixed(2)
+  }))
+};
+
+}
 }
 
 const aiHelper = new AIHelper();
