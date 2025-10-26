@@ -47,7 +47,7 @@ function App() {
   useGetMyShop();
   useGetShopByCity();
   useGetItemsByCity();
-  useGetMyOrders();
+  useGetMyOrders(); // fixed hook call
 
   // ✅ Setup socket connection - ONLY ONCE on mount
   useEffect(() => {
@@ -68,7 +68,7 @@ function App() {
 
     dispatch(setSocket(socketInstance));
 
-    // Cleanup only on app unmount
+    // Cleanup on unmount
     return () => {
       console.log('🔌 Disconnecting socket...');
       socketInstance.disconnect();
@@ -81,7 +81,7 @@ function App() {
       console.log('👤 Sending user identity:', userData._id);
       socket.emit('identity', { userId: userData._id });
     }
-  }, [socket, userData]); // watch userData instead of userData?._id
+  }, [socket, userData]);
 
   return (
     <>
@@ -101,7 +101,7 @@ function App() {
         <Route path="/shop/:shopId" element={userData ? <Shop /> : <Navigate to="/signin" />} />
       </Routes>
 
-      {/* ✅ Chatbot - Only show when user is logged in */}
+      {/* ✅ Chatbot */}
       {userData && <AIChatbot />}
     </>
   );
