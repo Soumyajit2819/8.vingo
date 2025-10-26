@@ -52,7 +52,7 @@ function App() {
   // ✅ Setup socket connection - ONLY ONCE on mount
   useEffect(() => {
     console.log('🔌 Creating socket connection...');
-    
+
     const socketInstance = io(serverUrl, {
       withCredentials: true,
       transports: ['websocket'],
@@ -73,15 +73,15 @@ function App() {
       console.log('🔌 Disconnecting socket...');
       socketInstance.disconnect();
     };
-  }, []); // ✅ Empty array - run once on mount
+  }, [dispatch]);
 
-  // ✅ Send user identity when user logs in (separate effect)
+  // ✅ Send user identity when user logs in
   useEffect(() => {
-    if (socket && userData?._id) {
+    if (socket && userData && userData._id) {
       console.log('👤 Sending user identity:', userData._id);
       socket.emit('identity', { userId: userData._id });
     }
-  }, [socket, userData?._id]); // Run when socket is ready or user changes
+  }, [socket, userData]); // watch userData instead of userData?._id
 
   return (
     <>
