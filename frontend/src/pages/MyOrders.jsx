@@ -4,7 +4,7 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';
 import UserOrderCard from '../components/UserOrderCard';
 import OwnerOrderCard from '../components/OwnerOrderCard';
-import { setMyOrders, updateRealtimeOrderStatus } from '../redux/userSlice';
+import { addMyOrder, updateRealtimeOrderStatus } from '../redux/userSlice';
 
 function MyOrders() {
   const { userData, myOrders, socket } = useSelector(state => state.user)
@@ -12,16 +12,26 @@ function MyOrders() {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (!socket) return; // ✅ Safety check
+    if (!socket || !userData?._id) return;
 
     const handleNewOrder = (data) => {
-      if (data.shopOrders?.owner._id == userData?._id) {
-        dispatch(setMyOrders([data, ...myOrders]))
+      console.log('📦 New order received:', data)
+      
+      // For owners - check if this order belongs to their shop
+      if (userData.role === "owner" && data.shopOrders?.[0]?.shop?.owner === userData._id) {
+        dispatch(addMyOrder(data))
+      }
+      // For users - check if this order is theirs
+      else if (userData.role === "user" && data.user?._id === userData._id) {
+        dispatch(addMyOrder(data))
       }
     }
 
     const handleUpdateStatus = ({ orderId, shopId, status, userId }) => {
-      if (userId == userData?._id) {
+      console.log('🔄 Status update:', { orderId, shopId, status, userId })
+      
+      // Update if this is the current user's order
+      if (userId === userData._id || userData.role === "owner") {
         dispatch(updateRealtimeOrderStatus({ orderId, shopId, status }))
       }
     }
@@ -33,7 +43,7 @@ function MyOrders() {
       socket.off('newOrder', handleNewOrder)
       socket.off('update-status', handleUpdateStatus)
     }
-  }, [socket, userData?._id, myOrders, dispatch]) // ✅ FIX: Add all dependencies
+  }, [socket, userData?._id, userData?.role, dispatch]) // ✅ REMOVED myOrders dependency
 
   return (
     <div className='w-full min-h-screen bg-[#fff9f6] flex justify-center px-4'>
@@ -48,10 +58,10 @@ function MyOrders() {
         <div className='space-y-6'>
           {myOrders && myOrders.length > 0 ? (
             myOrders.map((order, index) => (
-              userData.role == "user" ? (
-                <UserOrderCard data={order} key={index} />
-              ) : userData.role == "owner" ? (
-                <OwnerOrderCard data={order} key={index} />
+              userData.role === "user" ? (
+                <UserOrderCard data={order} key={order._id || index} />
+              ) : userData.role === "owner" ? (
+                <OwnerOrderCard data={order} key={order._id || index} />
               ) : null
             ))
           ) : (
