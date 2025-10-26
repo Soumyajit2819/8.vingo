@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, MapPin, Loader2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom'; // ✅ ADD THIS
 import axios from 'axios';
 
 const AIChatbot = () => {
+  const navigate = useNavigate(); // ✅ ADD THIS
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -166,8 +168,9 @@ const AIChatbot = () => {
           )}
         </div>
 
+        {/* ✅ FIXED: Use navigate instead of window.location.href */}
         <button 
-          onClick={() => window.location.href = `/shop/${shop._id}`}
+          onClick={() => navigate(`/shop/${shop._id}`)}
           className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-colors"
         >
           View Shop
