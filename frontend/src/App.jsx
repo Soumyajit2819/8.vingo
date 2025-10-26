@@ -19,7 +19,7 @@ import TrackOrderPage from './pages/TrackOrderPage';
 import Shop from './pages/Shop';
 
 // 🔹 Components
-import AIChatbot from './components/AIChatbot'; // ✅ ADD THIS
+import AIChatbot from './components/AIChatbot';
 
 // 🔹 Hooks
 import useGetCurrentUser from './hooks/useGetCurrentUser';
@@ -37,7 +37,7 @@ import { setSocket } from './redux/userSlice';
 export const serverUrl = import.meta.env.VITE_API_URL || "https://vingo-9xou.onrender.com";
 
 function App() {
-  const { userData } = useSelector((state) => state.user);
+  const { userData, socket } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   // ✅ Initialize hooks
@@ -49,32 +49,40 @@ function App() {
   useGetItemsByCity();
   useGetMyOrders();
 
-  // ✅ Setup socket connection
+  // ✅ Setup socket connection - ONLY ONCE on mount
   useEffect(() => {
+    console.log('🔌 Creating socket connection...');
+    
     const socketInstance = io(serverUrl, {
       withCredentials: true,
       transports: ['websocket'],
     });
 
-    dispatch(setSocket(socketInstance));
-
     socketInstance.on('connect', () => {
       console.log('✅ Socket connected:', socketInstance.id);
-      if (userData) {
-        socketInstance.emit('identity', { userId: userData._id });
-      }
     });
 
     socketInstance.on('connect_error', (err) => {
       console.error('❌ Socket connection error:', err.message);
     });
 
+    dispatch(setSocket(socketInstance));
+
+    // Cleanup only on app unmount
     return () => {
+      console.log('🔌 Disconnecting socket...');
       socketInstance.disconnect();
     };
-  }, [userData?._id]);
+  }, []); // ✅ Empty array - run once on mount
 
-  // ✅ App routes
+  // ✅ Send user identity when user logs in (separate effect)
+  useEffect(() => {
+    if (socket && userData?._id) {
+      console.log('👤 Sending user identity:', userData._id);
+      socket.emit('identity', { userId: userData._id });
+    }
+  }, [socket, userData?._id]); // Run when socket is ready or user changes
+
   return (
     <>
       <Routes>
@@ -92,8 +100,8 @@ function App() {
         <Route path="/track-order/:orderId" element={userData ? <TrackOrderPage /> : <Navigate to="/signin" />} />
         <Route path="/shop/:shopId" element={userData ? <Shop /> : <Navigate to="/signin" />} />
       </Routes>
-      
-      {/* ✅ ADD CHATBOT - Only show when user is logged in */}
+
+      {/* ✅ Chatbot - Only show when user is logged in */}
       {userData && <AIChatbot />}
     </>
   );
