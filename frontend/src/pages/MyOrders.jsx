@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';
 import UserOrderCard from '../components/UserOrderCard';
@@ -7,43 +7,43 @@ import OwnerOrderCard from '../components/OwnerOrderCard';
 import { addMyOrder, updateRealtimeOrderStatus } from '../redux/userSlice';
 
 function MyOrders() {
-  const { userData, myOrders, socket } = useSelector(state => state.user)
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const { userData, myOrders, socket } = useSelector(state => state.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!socket || !userData?._id) return;
+    if (!socket || !userData || !userData._id) return;
 
     const handleNewOrder = (data) => {
-      console.log('📦 New order received:', data)
-      
+      console.log('📦 New order received:', data);
+
       // For owners - check if this order belongs to their shop
       if (userData.role === "owner" && data.shopOrders?.[0]?.shop?.owner === userData._id) {
-        dispatch(addMyOrder(data))
+        dispatch(addMyOrder(data));
       }
       // For users - check if this order is theirs
       else if (userData.role === "user" && data.user?._id === userData._id) {
-        dispatch(addMyOrder(data))
+        dispatch(addMyOrder(data));
       }
-    }
+    };
 
     const handleUpdateStatus = ({ orderId, shopId, status, userId }) => {
-      console.log('🔄 Status update:', { orderId, shopId, status, userId })
-      
+      console.log('🔄 Status update:', { orderId, shopId, status, userId });
+
       // Update if this is the current user's order
       if (userId === userData._id || userData.role === "owner") {
-        dispatch(updateRealtimeOrderStatus({ orderId, shopId, status }))
+        dispatch(updateRealtimeOrderStatus({ orderId, shopId, status }));
       }
-    }
+    };
 
-    socket.on('newOrder', handleNewOrder)
-    socket.on('update-status', handleUpdateStatus)
+    socket.on('newOrder', handleNewOrder);
+    socket.on('update-status', handleUpdateStatus);
 
     return () => {
-      socket.off('newOrder', handleNewOrder)
-      socket.off('update-status', handleUpdateStatus)
-    }
-  }, [socket, userData?._id, userData?.role, dispatch]) // ✅ REMOVED myOrders dependency
+      socket.off('newOrder', handleNewOrder);
+      socket.off('update-status', handleUpdateStatus);
+    };
+  }, [socket, userData, dispatch]); // ✅ removed optional chaining
 
   return (
     <div className='w-full min-h-screen bg-[#fff9f6] flex justify-center px-4'>
@@ -78,7 +78,7 @@ function MyOrders() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default MyOrders
+export default MyOrders;
