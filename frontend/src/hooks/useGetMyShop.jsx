@@ -1,26 +1,33 @@
 import axios from 'axios'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { serverUrl } from '../App'
 import { useDispatch, useSelector } from 'react-redux'
-import { setUserData } from '../redux/userSlice'
-import { setMyShopData } from '../redux/ownerSlice'
+import { setMyOrders } from '../redux/userSlice'
 
-function useGetMyshop() {
-    const dispatch=useDispatch()
-    const {userData}=useSelector(state=>state.user)
-  useEffect(()=>{
-  const fetchShop=async () => {
-    try {
-           const result=await axios.get(`${serverUrl}/api/shop/get-my`,{withCredentials:true})
-            dispatch(setMyShopData(result.data))
+function useGetMyOrders() {
+  const dispatch = useDispatch()
+  const { userData } = useSelector(state => state.user)
   
-    } catch (error) {
-        console.log(error)
+  useEffect(() => {
+    // Only fetch if user is logged in
+    if (!userData?._id) return;
+
+    const fetchOrders = async () => {
+      try {
+        const result = await axios.get(`${serverUrl}/api/order/my-orders`, { 
+          withCredentials: true 
+        })
+        console.log('✅ Orders fetched:', result.data);
+        dispatch(setMyOrders(result.data))
+      } catch (error) {
+        console.error('❌ Error fetching orders:', error)
+        // Set empty array on error to prevent undefined issues
+        dispatch(setMyOrders([]))
+      }
     }
-}
-fetchShop()
- 
-  },[userData])
+    
+    fetchOrders()
+  }, [userData?._id]) // ✅ FIX: Use userData._id instead of entire userData object
 }
 
-export default useGetMyshop
+export default useGetMyOrders
