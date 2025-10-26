@@ -10,23 +10,18 @@ function useGetMyOrders() {
   const hasFetched = useRef(false);
 
   useEffect(() => {
-    // Only fetch if user is logged in
     if (!userData || !userData._id) {
       hasFetched.current = false;
       return;
     }
 
-    // Don't fetch if already fetched
-    if (hasFetched.current) {
-      console.log('⏭️  Orders already fetched, skipping...');
-      return;
-    }
+    if (hasFetched.current) return;
 
     const fetchOrders = async () => {
       try {
         console.log('🔄 Fetching orders for user:', userData._id);
-        const result = await axios.get(`${serverUrl}/api/order/my-orders`, { 
-          withCredentials: true 
+        const result = await axios.get(`${serverUrl}/api/order/my-orders`, {
+          withCredentials: true
         });
         console.log('✅ Orders fetched:', result.data);
         dispatch(setMyOrders(result.data));
@@ -38,7 +33,7 @@ function useGetMyOrders() {
     };
 
     fetchOrders();
-  }, [userData, dispatch]); // ✅ watch userData, not userData?._id
+  }, [userData, dispatch]);
 }
 
 export default useGetMyOrders;
