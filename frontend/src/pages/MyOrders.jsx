@@ -4,7 +4,7 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { useNavigate } from 'react-router-dom';
 import UserOrderCard from '../components/UserOrderCard';
 import OwnerOrderCard from '../components/OwnerOrderCard';
-import { setMyOrders, updateOrderStatus, updateRealtimeOrderStatus } from '../redux/userSlice';
+import { setMyOrders, updateRealtimeOrderStatus } from '../redux/userSlice';
 
 function MyOrders() {
   const { userData, myOrders, socket } = useSelector(state => state.user)
@@ -12,23 +12,28 @@ function MyOrders() {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    socket?.on('newOrder', (data) => {
-      if (data.shopOrders?.owner._id == userData._id) {
+    if (!socket) return; // ✅ Safety check
+
+    const handleNewOrder = (data) => {
+      if (data.shopOrders?.owner._id == userData?._id) {
         dispatch(setMyOrders([data, ...myOrders]))
       }
-    })
+    }
 
-    socket?.on('update-status', ({ orderId, shopId, status, userId }) => {
-      if (userId == userData._id) {
+    const handleUpdateStatus = ({ orderId, shopId, status, userId }) => {
+      if (userId == userData?._id) {
         dispatch(updateRealtimeOrderStatus({ orderId, shopId, status }))
       }
-    })
+    }
+
+    socket.on('newOrder', handleNewOrder)
+    socket.on('update-status', handleUpdateStatus)
 
     return () => {
-      socket?.off('newOrder')
-      socket?.off('update-status')
+      socket.off('newOrder', handleNewOrder)
+      socket.off('update-status', handleUpdateStatus)
     }
-  }, [socket])
+  }, [socket, userData?._id, myOrders, dispatch]) // ✅ FIX: Add all dependencies
 
   return (
     <div className='w-full min-h-screen bg-[#fff9f6] flex justify-center px-4'>
@@ -52,8 +57,8 @@ function MyOrders() {
           ) : (
             <div className='text-center py-10'>
               <p className='text-gray-500 text-lg'>No orders yet</p>
-              <button 
-                onClick={() => navigate("/")} 
+              <button
+                onClick={() => navigate("/")}
                 className='mt-4 bg-[#ff4d2d] hover:bg-[#e64526] text-white px-6 py-2 rounded-lg'
               >
                 Start Ordering
