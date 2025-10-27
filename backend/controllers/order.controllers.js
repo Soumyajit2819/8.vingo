@@ -220,7 +220,7 @@ export const updateOrderStatus = async (req, res) => {
         location: {
           $near: {
             $geometry: { type: "Point", coordinates: [Number(longitude), Number(latitude)] },
-            $maxDistance: 25000
+            $maxDistance: 15000
           }
         }
       })
@@ -595,4 +595,5 @@ export const getTodayDeliveries = async (req, res) => {
     return res.status(500).json({ message: `today deliveries error ${error}` })
   }
 }
+
 
