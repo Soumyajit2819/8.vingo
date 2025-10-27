@@ -3,9 +3,10 @@ import axios from "axios";
 import { serverUrl } from "../App";
 
 const Collaboration = () => {
-  const [selectedEvent, setSelectedEvent] = useState("University Blood Drive");
+  const [selectedEvent, setSelectedEvent] = useState("Clothes Distribution Event");
   const [message, setMessage] = useState("");
   const [coupon, setCoupon] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const events = [
     "University Blood Drive",
@@ -15,64 +16,96 @@ const Collaboration = () => {
   ];
 
   const handleParticipate = async () => {
+    if (!selectedEvent) {
+      setMessage("Please select an event");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+    setCoupon("");
+
     try {
-      // ✅ Send request with cookies (not Authorization header)
       const response = await axios.post(
         `${serverUrl}/api/coupon/create`,
         { event: selectedEvent },
-        { withCredentials: true } // 🔥 crucial for cookie-based login
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
       if (response.data?.coupon) {
         setCoupon(response.data.coupon.code);
         setMessage("🎉 Participation successful! You received a coupon:");
       } else {
-        setMessage(response.data?.message || "You already participated.");
+        setMessage(response.data?.message || "You already participated in this event.");
       }
     } catch (error) {
       console.error("Error creating coupon:", error);
-
-      // Handle auth error
+      
       if (error.response?.status === 401) {
-        alert("Login required!");
-        window.location.href = "/signin";
+        setMessage("⚠️ Please login to participate");
+        setTimeout(() => {
+          window.location.href = "/signin";
+        }, 2000);
+      } else if (error.response?.status === 400) {
+        setMessage(error.response?.data?.message || "You may have already participated in this event.");
+      } else if (error.response?.status === 404) {
+        setMessage("Service unavailable. Please try again later.");
       } else {
         setMessage("Something went wrong. Please try again later.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#fff9f6] flex justify-center px-4">
+    <div className="w-full min-h-screen bg-[#fff9f6] flex justify-center px-4 py-8">
       <div className="w-full max-w-[600px] bg-white shadow-md rounded-2xl p-6 mt-10">
         <h1 className="text-2xl font-bold text-center mb-4">Collaborate & Donate</h1>
         <p className="text-gray-600 text-center mb-6">
           Participate in a charity and get a free food coupon!
         </p>
 
-        {/* Event Selection */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">Choose an event:</label>
-          <select
-            value={selectedEvent}
-            onChange={(e) => setSelectedEvent(e.target.value)}
-            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]"
-          >
-            {events.map((event, index) => (
-              <option key={index} value={event}>
-                {event}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Event Selection Form */}
+        <form onSubmit={(e) => { e.preventDefault(); handleParticipate(); }}>
+          <div className="mb-6">
+            <label htmlFor="event-select" className="block text-gray-700 font-medium mb-2">
+              Choose an event:
+            </label>
+            <select
+              id="event-select"
+              name="event"
+              value={selectedEvent}
+              onChange={(e) => setSelectedEvent(e.target.value)}
+              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]"
+              required
+            >
+              {events.map((event, index) => (
+                <option key={index} value={event}>
+                  {event}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {/* Participate Button */}
-        <button
-          onClick={handleParticipate}
-          className="w-full bg-[#ff4d2d] hover:bg-[#e64526] text-white py-3 rounded-lg font-semibold transition"
-        >
-          Participate & Get Coupon
-        </button>
+          {/* Participate Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 rounded-lg font-semibold transition ${
+              loading 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-[#ff4d2d] hover:bg-[#e64526] text-white'
+            }`}
+          >
+            {loading ? "Processing..." : "Participate & Get Coupon"}
+          </button>
+        </form>
 
         {/* Display message */}
         {message && (
