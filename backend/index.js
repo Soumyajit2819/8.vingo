@@ -14,7 +14,7 @@ import shopRouter from "./routes/shop.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import orderRouter from "./routes/order.routes.js";
 import aiRouter from "./routes/aiRoutes.js"; // ✅ FIXED - matches your filename
-
+import couponRoutes from "./routes/coupon.js";
 // Socket
 import { socketHandler } from "./socket.js";
 
@@ -67,7 +67,7 @@ app.use("/api/shop", shopRouter);
 app.use("/api/item", itemRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/ai", aiRouter); // ✅ AI Routes
-
+app.use("/api/coupon", couponRoutes);
 // -------------------
 // SOCKET HANDLER
 // -------------------
