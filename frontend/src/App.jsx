@@ -18,6 +18,9 @@ import MyOrders from './pages/MyOrders';
 import TrackOrderPage from './pages/TrackOrderPage';
 import Shop from './pages/Shop';
 
+// 🆕 Added new Collaboration page import
+import Collaboration from './pages/Collaboration';
+
 // 🔹 Components
 import AIChatbot from './components/AIChatbot';
 
@@ -99,6 +102,9 @@ function App() {
         <Route path="/my-orders" element={userData ? <MyOrders /> : <Navigate to="/signin" />} />
         <Route path="/track-order/:orderId" element={userData ? <TrackOrderPage /> : <Navigate to="/signin" />} />
         <Route path="/shop/:shopId" element={userData ? <Shop /> : <Navigate to="/signin" />} />
+
+        {/* 🆕 Added new Collaboration route for charity participation */}
+        <Route path="/collaboration" element={userData ? <Collaboration /> : <Navigate to="/signin" />} />
       </Routes>
 
       {/* ✅ Chatbot */}
