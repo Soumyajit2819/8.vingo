@@ -17,9 +17,7 @@ import OrderPlaced from './pages/OrderPlaced';
 import MyOrders from './pages/MyOrders';
 import TrackOrderPage from './pages/TrackOrderPage';
 import Shop from './pages/Shop';
-
-// 🆕 Added new Collaboration page import
-import Collaboration from './pages/Collaboration';
+import Collaboration from './pages/Collaboration'; // 🆕
 
 // 🔹 Components
 import AIChatbot from './components/AIChatbot';
@@ -50,12 +48,10 @@ function App() {
   useGetMyShop();
   useGetShopByCity();
   useGetItemsByCity();
-  useGetMyOrders(); // fixed hook call
+  useGetMyOrders();
 
-  // ✅ Setup socket connection - ONLY ONCE on mount
+  // ✅ Setup socket connection
   useEffect(() => {
-    console.log('🔌 Creating socket connection...');
-
     const socketInstance = io(serverUrl, {
       withCredentials: true,
       transports: ['websocket'],
@@ -71,17 +67,14 @@ function App() {
 
     dispatch(setSocket(socketInstance));
 
-    // Cleanup on unmount
     return () => {
-      console.log('🔌 Disconnecting socket...');
       socketInstance.disconnect();
     };
   }, [dispatch]);
 
-  // ✅ Send user identity when user logs in
+  // ✅ Send user identity when logged in
   useEffect(() => {
     if (socket && userData && userData._id) {
-      console.log('👤 Sending user identity:', userData._id);
       socket.emit('identity', { userId: userData._id });
     }
   }, [socket, userData]);
@@ -103,11 +96,21 @@ function App() {
         <Route path="/track-order/:orderId" element={userData ? <TrackOrderPage /> : <Navigate to="/signin" />} />
         <Route path="/shop/:shopId" element={userData ? <Shop /> : <Navigate to="/signin" />} />
 
-        {/* 🆕 Added new Collaboration route for charity participation */}
-        <Route path="/collaboration" element={userData ? <Collaboration /> : <Navigate to="/signin" />} />
+        {/* 🩵 FIXED Collaboration route */}
+        <Route
+          path="/collaboration"
+          element={
+            userData === null ? (
+              <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading user...</div>
+            ) : userData ? (
+              <Collaboration />
+            ) : (
+              <Navigate to="/signin" />
+            )
+          }
+        />
       </Routes>
 
-      {/* ✅ Chatbot */}
       {userData && <AIChatbot />}
     </>
   );
