@@ -5,10 +5,10 @@ import User from "../models/user.model.js";
 // 🧾 Create Coupon
 export const createCoupon = async (req, res) => {
   try {
-   console.log("📩 Incoming request body:", req.body);
-    console.log("👤 Authenticated user:", req.user);
-
-    const userId = req.user?._id;
+    console.log("📩 Incoming request body:", req.body);
+    console.log("👤 Authenticated userId:", req.userId); // ✅ FIXED: Now checking req.userId
+    
+    const userId = req.userId; // ✅ FIXED: Changed from req.user._id to req.userId
     const { event } = req.body;
 
     if (!userId) {
@@ -21,16 +21,16 @@ export const createCoupon = async (req, res) => {
       return res.status(400).json({ message: "Event name required" });
     }
 
-    // check if user already has a coupon for this event
+    // Check if user already has a coupon for this event
     const existing = await Coupon.findOne({ user: userId, event });
     if (existing) {
       console.log("⚠️ User already participated in this event");
-      return res.status(200).json({ message: "You already participated." });
+      return res.status(200).json({ message: "You already participated in this event." });
     }
 
-    // generate random code
+    // Generate random code
     const code = "COLLAB-" + Math.floor(1000 + Math.random() * 9000);
-
+    
     const coupon = await Coupon.create({
       user: userId,
       event,
@@ -39,13 +39,13 @@ export const createCoupon = async (req, res) => {
     });
 
     console.log("✅ Coupon created:", coupon);
-
     res.status(200).json({ message: "Coupon created successfully", coupon });
   } catch (error) {
     console.error("🔥 Error creating coupon:", error);
     res.status(500).json({ message: "Server error while creating coupon" });
   }
 };
+
 // 🧾 Validate Coupon
 export const validateCoupon = async (req, res) => {
   try {
@@ -56,6 +56,7 @@ export const validateCoupon = async (req, res) => {
     }
 
     const coupon = await Coupon.findOne({ code, user: userId });
+
     if (!coupon) {
       return res.status(404).json({ success: false, message: "Invalid coupon code" });
     }
@@ -89,6 +90,7 @@ export const useCoupon = async (req, res) => {
     }
 
     const coupon = await Coupon.findOne({ code, user: userId });
+
     if (!coupon) {
       return res.status(404).json({ success: false, message: "Invalid coupon" });
     }
