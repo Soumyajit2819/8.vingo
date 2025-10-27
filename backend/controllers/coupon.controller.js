@@ -1,5 +1,5 @@
 // controllers/coupon.controller.js
-import Coupon from "../models/Coupon.models.js";
+import Coupon from "../models/Coupon.model.js";
 import User from "../models/user.model.js";
 
 // 🧾 Create Coupon
