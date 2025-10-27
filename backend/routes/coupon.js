@@ -4,7 +4,7 @@ import { createCoupon, validateCoupon, useCoupon } from "../controllers/coupon.c
 
 const router = express.Router();
 
-router.post("/create", createCoupon);
+router.post("/create", isAuth, createCoupon);
 router.post("/validate", validateCoupon);
 router.post("/use", isAuth, useCoupon);
 
