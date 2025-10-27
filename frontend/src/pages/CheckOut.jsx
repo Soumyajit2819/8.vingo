@@ -33,14 +33,19 @@ function CheckOut() {
   // Coupon states
   const [couponCode, setCouponCode] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const [discountPercent, setDiscountPercent] = useState(0) // ✅ Store discount percentage
   const [showCouponInput, setShowCouponInput] = useState(false)
   const [couponLoading, setCouponLoading] = useState(false)
   
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const apiKey = import.meta.env.VITE_GEOAPIKEY
+  
+  // Calculate amounts with discount
   const deliveryFee = totalAmount > 500 ? 0 : 40
-  const AmountWithDeliveryFee = totalAmount + deliveryFee
+  const discountAmount = (totalAmount * discountPercent) / 100 // ✅ Calculate discount
+  const subtotalAfterDiscount = totalAmount - discountAmount // ✅ Subtract discount
+  const AmountWithDeliveryFee = subtotalAfterDiscount + deliveryFee // ✅ Add delivery to discounted amount
 
   // Apply Coupon
   const applyCoupon = async () => {
@@ -59,15 +64,9 @@ function CheckOut() {
 
       if (res.data.success) {
         setAppliedCoupon(couponCode);
-        alert("🎉 Coupon redeemed successfully!");
+        setDiscountPercent(res.data.discountPercent || 10); // ✅ Store the discount percentage
+        alert(`🎉 Coupon applied! ${res.data.discountPercent || 10}% discount`);
         setShowCouponInput(false);
-        
-        // Mark coupon as used
-        await axios.post(
-          `${serverUrl}/api/coupon/use`,
-          { code: couponCode.trim(), userId: userData._id },
-          { withCredentials: true }
-        );
       } else {
         alert(res.data.message || "Invalid coupon");
       }
@@ -81,6 +80,7 @@ function CheckOut() {
   const removeCoupon = () => {
     setCouponCode("");
     setAppliedCoupon(null);
+    setDiscountPercent(0); // ✅ Reset discount
     setShowCouponInput(false);
   };
 
@@ -125,10 +125,20 @@ function CheckOut() {
           latitude: location.lat,
           longitude: location.lon
         },
-        totalAmount: AmountWithDeliveryFee,
+        totalAmount: AmountWithDeliveryFee, // ✅ Send discounted total
         cartItems,
-        couponCode: appliedCoupon || null // Include coupon if applied
+        couponCode: appliedCoupon || null,
+        discountApplied: discountAmount // ✅ Include discount info
       }, { withCredentials: true })
+
+      // ✅ Mark coupon as used after order placement
+      if (appliedCoupon) {
+        await axios.post(
+          `${serverUrl}/api/coupon/use`,
+          { code: appliedCoupon, userId: userData._id },
+          { withCredentials: true }
+        );
+      }
 
       if (paymentMethod == "cod") {
         dispatch(addMyOrder(result.data))
@@ -270,6 +280,7 @@ function CheckOut() {
                 <div>
                   <p className='text-sm text-gray-600'>Coupon Applied</p>
                   <p className='font-bold text-gray-800'>{appliedCoupon}</p>
+                  <p className='text-sm text-green-600'>{discountPercent}% discount</p>
                 </div>
               </div>
               <button
@@ -335,19 +346,30 @@ function CheckOut() {
               <span>Subtotal</span>
               <span>₹{totalAmount}</span>
             </div>
+            
+            {/* ✅ Show discount if applied */}
+            {appliedCoupon && (
+              <div className='flex justify-between text-green-600 font-medium'>
+                <span>✓ Coupon Discount ({discountPercent}%)</span>
+                <span>-₹{discountAmount.toFixed(2)}</span>
+              </div>
+            )}
+            
             <div className='flex justify-between text-gray-700'>
               <span>Delivery Fee</span>
               <span>{deliveryFee == 0 ? "Free" : `₹${deliveryFee}`}</span>
             </div>
+            
             {appliedCoupon && (
-              <div className='flex justify-between text-green-600 font-medium'>
-                <span>✓ Coupon Applied</span>
+              <div className='flex justify-between text-sm text-green-600 bg-green-50 p-2 rounded'>
+                <span>Coupon Applied</span>
                 <span>{appliedCoupon}</span>
               </div>
             )}
-            <div className='flex justify-between text-lg font-bold text-[#ff4d2d] pt-2'>
+            
+            <div className='flex justify-between text-lg font-bold text-[#ff4d2d] pt-2 border-t-2'>
               <span>Total</span>
-              <span>₹{AmountWithDeliveryFee}</span>
+              <span>₹{AmountWithDeliveryFee.toFixed(2)}</span>
             </div>
           </div>
         </section>
