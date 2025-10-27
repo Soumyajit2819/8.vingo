@@ -1,11 +1,10 @@
 import express from "express";
-import { createCoupon, getMyCoupons, verifyCoupon, useCoupon } from "../controllers/coupon.controllers.js";
+import { createCoupon, validateCoupon, useCoupon } from "../controllers/coupon.controller.js";
 
-const couponRouter = express.Router();
+const router = express.Router();
 
-couponRouter.post("/create", createCoupon);
-couponRouter.get("/my-coupons", getMyCoupons); // Add auth middleware if you have
-couponRouter.post("/verify", verifyCoupon);
-couponRouter.post("/use", useCoupon);
+router.post("/create", createCoupon);
+router.post("/validate", validateCoupon);
+router.post("/use", useCoupon);
 
-export default couponRouter;
+export default router;
