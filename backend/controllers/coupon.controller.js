@@ -5,51 +5,47 @@ import User from "../models/user.model.js";
 // 🧾 Create Coupon
 export const createCoupon = async (req, res) => {
   try {
-    const { userId } = req.body;
+   console.log("📩 Incoming request body:", req.body);
+    console.log("👤 Authenticated user:", req.user);
+
+    const userId = req.user?._id;
+    const { event } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ success: false, message: "User ID is required" });
+      console.log("❌ No user ID found in request");
+      return res.status(401).json({ message: "User not authenticated" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    if (!event) {
+      console.log("❌ No event provided");
+      return res.status(400).json({ message: "Event name required" });
     }
 
-    // Prevent multiple active coupons
-    const existing = await Coupon.findOne({ user: userId, isUsed: false });
+    // check if user already has a coupon for this event
+    const existing = await Coupon.findOne({ user: userId, event });
     if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: "You already have an unused coupon",
-        couponCode: existing.code,
-      });
+      console.log("⚠️ User already participated in this event");
+      return res.status(200).json({ message: "You already participated." });
     }
 
-    // Generate unique code
-    const random = Math.floor(1000 + Math.random() * 9000);
-    const code = `COLLAB-${random}`;
+    // generate random code
+    const code = "COLLAB-" + Math.floor(1000 + Math.random() * 9000);
 
-    const newCoupon = new Coupon({
-      code,
+    const coupon = await Coupon.create({
       user: userId,
-      discountPercent: 10,
-      validTill: new Date(Date.now() + 24 * 60 * 60 * 1000), // valid for 24h
+      event,
+      code,
+      used: false,
     });
 
-    await newCoupon.save();
+    console.log("✅ Coupon created:", coupon);
 
-    res.status(201).json({
-      success: true,
-      message: "Coupon created successfully",
-      couponCode: newCoupon.code,
-    });
+    res.status(200).json({ message: "Coupon created successfully", coupon });
   } catch (error) {
-    console.error("Coupon creation error:", error);
-    res.status(500).json({ success: false, message: "Server error while creating coupon" });
+    console.error("🔥 Error creating coupon:", error);
+    res.status(500).json({ message: "Server error while creating coupon" });
   }
 };
-
 // 🧾 Validate Coupon
 export const validateCoupon = async (req, res) => {
   try {
