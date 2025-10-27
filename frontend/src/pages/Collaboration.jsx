@@ -1,30 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { serverUrl } from '../App';
 
 function Collaboration() {
   const navigate = useNavigate();
   const [selectedCharity, setSelectedCharity] = useState('');
   const [loading, setLoading] = useState(false);
+  const user = JSON.parse(localStorage.getItem("user")); // logged-in user
 
   const charities = [
     { id: 1, name: "University Blood Drive" },
-    { id: 2, name: "Local Charity Fund" }
+    { id: 2, name: "Local Charity Fund" },
   ];
 
   const handleParticipate = async () => {
     if (!selectedCharity) return alert("Please select a charity!");
+    if (!user?._id) return alert("Login required!");
+
     setLoading(true);
 
     try {
-      // Use your existing Razorpay integration here (test API)
-      const couponCode = `COLLAB-${Math.floor(Math.random()*10000)}`; // generate unique code
-      localStorage.setItem('collabCode', couponCode);
-      alert(`Thank you for participating! Your coupon code: ${couponCode}`);
-      navigate("/checkout"); // redirect to checkout to use coupon
+      // ✅ Call backend to create a coupon for this user
+      const res = await axios.post(`${serverUrl}/api/coupon/create`, {
+        userId: user._id,
+      });
+
+      if (res.data.success) {
+        localStorage.setItem("collabCode", res.data.couponCode);
+        alert(`Thank you! Your coupon code is: ${res.data.couponCode}`);
+        navigate("/checkout");
+      } else {
+        alert(res.data.message);
+      }
     } catch (error) {
-      console.log(error);
-      alert("Payment failed or canceled");
+      console.error(error);
+      alert("Error generating coupon. Try again!");
     } finally {
       setLoading(false);
     }
@@ -43,7 +54,7 @@ function Collaboration() {
         className="w-full p-2 border rounded mb-4"
       >
         <option value="">Select a charity</option>
-        {charities.map(c => (
+        {charities.map((c) => (
           <option key={c.id} value={c.name}>{c.name}</option>
         ))}
       </select>
