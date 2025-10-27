@@ -595,6 +595,3 @@ export const getTodayDeliveries = async (req, res) => {
     return res.status(500).json({ message: `today deliveries error ${error}` })
   }
 }
-
-
-
