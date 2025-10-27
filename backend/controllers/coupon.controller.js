@@ -1,4 +1,4 @@
-t// controllers/coupon.controller.js
+// controllers/coupon.controller.js
 import Coupon from "../models/Coupon.models.js";
 import User from "../models/user.model.js";
 
