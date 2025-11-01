@@ -1,18 +1,11 @@
 import express from "express";
-import { 
-  createCoupon, 
-  validateCoupon, 
-  useCoupon,
-  createOrder,
-  verifyPayment
-} from "../controllers/coupon.controller.js";
+import isAuth from "../middlewares/isAuth.js";
+import { createCoupon, validateCoupon, useCoupon } from "../controllers/coupon.controller.js";
 
-const couponRouter = express.Router();
+const router = express.Router();
 
-couponRouter.post("/create", createCoupon);
-couponRouter.post("/validate", validateCoupon);
-couponRouter.post("/use", useCoupon);
-couponRouter.post("/create-order", createOrder);       // NEW
-couponRouter.post("/verify-payment", verifyPayment);   // NEW
+router.post("/create", isAuth, createCoupon);
+router.post("/validate", validateCoupon);
+router.post("/use", isAuth, useCoupon);
 
-export default couponRouter;
+export default router;
